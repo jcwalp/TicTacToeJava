@@ -1,122 +1,135 @@
 import java.util.Arrays;
 import java.util.Scanner;
 public class Game {
-	//constants to represent different cell contents
-	public static final char empty = '-';
-	public static final char pl1 = 'x';
-	public static final char pl2 = 'o';
-
-	//constants for board
-	public static final int rows = 3, columns = 3;
-	public static final char[][] board = new char[rows][columns];
-	public static final char[][] positions = new char[rows][columns];
-	public static final char[][] WinPlayer = {{'x','x','x'},
-											  {'x','x','x'},
-										      {'x','x','x'}};
-	public static final char[][] WinComputer ={{'o','o','o'},
-											   {'o','o','o'},
-											   {'o','o','o'}};
-	//setting scanner up
+	public static final int rows = 3, cols = 3;
+	public static final char[][] board = new char[rows][cols];
+	public static char currentPlayer;
 	public static final Scanner kb = new Scanner(System.in);
-	public static boolean isPlaying = true;
-	public static boolean isPlayersTurn = true;
-	public static boolean isComputersTurn = false;
-	public static boolean WIN = false;
-	public static boolean LOSE = false;
-	public static boolean DRAW = false;
 
-	public static void main (String[] args) {
-		initializeGame();
-		while(isPlaying){
-			if (isPlayersTurn){
-				prompt();
-				checkForWin();
-					if(!WIN){
-						isPlayersTurn = false;
-						isComputersTurn = true;
-					}
-					else{
-						winPrompt();
-					}
-
-			}
-			if (isComputersTurn){
-				updateComputerGame();
-
-			}
+	public static void main(String[] args) {
+		currentPlayer = 'x';
+		initializeBoard();
+		while (!checkForWin()) {
+			prompt();
+			printBoard();
+			checkForWin();
+			changePlayer();
+			AI();
+			printBoard();
+			changePlayer();
+		}
+		if (checkForWin()) {
+			System.out.println("win");
+		}
+		else if (isBoardFull()) {
+			System.out.println("draw");
 		}
 
 	}
 
-	public static void initializeGame() {
-		for (int i = 0; i < rows; i++) {
-			for (int j = 0; j < columns; j++) {
-				board[i][j] = empty;
-				positions[i][j] = empty;
+	public static void initializeBoard() {
+		for (int r = 0; r < rows; r++) {
+			for (int c = 0; c < cols; c++) {
+				board[r][c] = '-';
 			}
 		}
 	}
 
-	public static void prompt(){
-		System.out.println("Enter X coordinates");
-		int px = kb.nextInt();
-		System.out.println("Enter Y coordinates");
-		int py = kb.nextInt();
-		updatePlayerGame(px, py);
+	public static void printBoard() {
+		System.out.println("------------");
+
+		for(int r = 0; r < rows; r++) {
+			System.out.print("| ");
+			for(int c = 0; c < cols; c++) {
+				System.out.print(board[r][c] + " | ");
+			}
+			System.out.println();
+			System.out.println("------------");
+		}
 	}
 
-	public static void printGameState() {
-		System.out.println(board[0]);
-		System.out.println(board[1]);
-		System.out.println(board[2]);
+	public static boolean isBoardFull() {
+		boolean isFull = true;
+		for (int r = 0; r < rows; r++) {
+			for (int c = 0; c < cols; c++) {
+				if(board[r][c] == '-') {
+					isFull = false;
+				}
+				else {
+					isFull = true;
+				}
+			}
+		}
+		return isFull;
 	}
 
-	public static void updatePlayerGame(int PlayerX, int PlayerY) {
-		board[PlayerX][PlayerY] = pl1;
-		positions[PlayerX][PlayerY] = pl1;
+	public static void changePlayer() {
+		if (currentPlayer == 'x') {
+			currentPlayer = 'o';
+		}
+		else {
+			currentPlayer = 'x';
+		}
 	}
 
-	public static void updateComputerGame() {
+	public static boolean placePosition(int posX, int posY) {
+		if ((posX >= 0) && (posX <= 3)) {
+			if ((posY >= 0) && (posY <= 3)) {
+				if (board[posX-1][posY-1] == '-') {
+					board[posX-1][posY-1] = currentPlayer;
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public static void prompt() {
+		System.out.println("Welcome to Tic Tac Toe");
+		System.out.println("To place your mark enter your X and Y coordinates");
+		System.out.println("X: ");
+		int posX = kb.nextInt();
+		System.out.println("Y: ");
+		int posY = kb.nextInt();
+		placePosition(posX, posY);
 
 	}
 
-	public static void checkForWin() {
-		//row check (x x x)
-		for (int i = 0; i < rows; i++) {
-			if (positions[i] == WinPlayer[0]) {
-				WIN = true;
-				isPlaying = false;
+	public static boolean checkForWin() {
+		return (checkRowsForWin() || checkColsForWin() || checkDiaForWin());
+	}
+
+	public static boolean checkRowsForWin() {
+		for(int r = 0; r < 3; r++) {
+			if (checkRowCol(board[r][0], board[r][1], board[r][2]) == true) {
+				return true;
 			}
 		}
-		//column 1 check
-		for (int i = 0; i < columns; i++){
-			if (positions[i][0] == WinPlayer[i][0]){
-				WIN = true;
-				isPlaying = false;
+		return false;
+	}
+
+	public static boolean checkColsForWin() {
+		for(int c = 0; c < 3; c++) {
+			if (checkRowCol(board[0][c], board[1][c], board[2][c]) == true) {
+				return true;
 			}
 		}
-		//column 2 check
-		for (int i = 0; i < columns; i++){
-			if (positions[i][1] == WinPlayer[i][1]){
-				WIN = true;
-				isPlaying = false;
-			}
-		}
-		//column 3 check
-		for (int i = 0; i < columns; i++){
-			if (positions[i][2] == WinPlayer[i][2]){
-				WIN = true;
-				isPlaying = false;
-			}
-		}
-		//cross check 1
-		if (positions[0][0] == pl1 && positions[1][1] == pl1 && positions[2][2] == pl1){
-			WIN = true;
-			isPlaying = false;
-		}
-		if (positions[0][2] == pl1 && positions[1][1] == pl1 && positions[2][0] == pl1){
-			WIN = true;
-			isPlaying = false;
+		return false;
+	}
+
+	public static boolean checkDiaForWin() {
+		return ((checkRowCol(board[0][0], board[1][1], board[2][2]) == true) || (checkRowCol(board[0][2], board[1][1], board[2][0]) == true));
+	}
+
+	public static boolean checkRowCol(char c1, char c2, char c3) {
+		return ((c1 != '-') && (c1 == c2) && (c2 == c3));
+	}
+
+	public static void AI() {
+		if (currentPlayer == 'o') {
+			int posX = (int)(3 * Math.random() + 1);
+			int posY = (int)(3 * Math.random() + 1);
+			placePosition(posX, posY);
 		}
 	}
 }
