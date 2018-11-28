@@ -9,22 +9,45 @@ public class Game {
 	public static void main(String[] args) {
 		currentPlayer = 'x';
 		initializeBoard();
+		prompt();
 		while (!checkForWin()) {
-			prompt();
+			printBoard();
+			promptInput();
 			printBoard();
 			checkForWin();
-			changePlayer();
-			AI();
-			printBoard();
-			changePlayer();
+			if(!checkForWin()) {
+				changePlayer();
+				AI();
+				printBoard();
+				checkForWin();
+				changePlayer();
+			}
 		}
 		if (checkForWin()) {
-			System.out.println("win");
+			System.out.println("win: " + currentPlayer);
 		}
 		else if (isBoardFull()) {
 			System.out.println("draw");
 		}
 
+	}
+
+	public static void promptInput() {
+		System.out.println("Current Player: " + currentPlayer);
+		if (currentPlayer == 'x') {
+			System.out.println("Enter X Coordinate");
+			System.out.println("X: ");
+			int posX = kb.nextInt();
+			System.out.println("Enter Y Coordinate");
+			System.out.println("Y: ");
+			int posY = kb.nextInt();
+			placePosition(posX, posY);
+		}
+		else {
+			System.out.println("Current Player: " + currentPlayer);
+			System.out.println("The Computer Will now choose a position");
+			System.out.println();
+		}
 	}
 
 	public static void initializeBoard() {
@@ -36,7 +59,7 @@ public class Game {
 	}
 
 	public static void printBoard() {
-		System.out.println("------------");
+		System.out.println("-------------");
 
 		for(int r = 0; r < rows; r++) {
 			System.out.print("| ");
@@ -44,7 +67,7 @@ public class Game {
 				System.out.print(board[r][c] + " | ");
 			}
 			System.out.println();
-			System.out.println("------------");
+			System.out.println("-------------");
 		}
 	}
 
@@ -86,13 +109,7 @@ public class Game {
 
 	public static void prompt() {
 		System.out.println("Welcome to Tic Tac Toe");
-		System.out.println("To place your mark enter your X and Y coordinates");
-		System.out.println("X: ");
-		int posX = kb.nextInt();
-		System.out.println("Y: ");
-		int posY = kb.nextInt();
-		placePosition(posX, posY);
-
+		System.out.println("You are X, the computer is O");
 	}
 
 	public static boolean checkForWin() {
@@ -127,9 +144,19 @@ public class Game {
 
 	public static void AI() {
 		if (currentPlayer == 'o') {
+			int count = 0;
 			int posX = (int)(3 * Math.random() + 1);
 			int posY = (int)(3 * Math.random() + 1);
-			placePosition(posX, posY);
+			while (count != 1) {
+				if (placePosition(posX, posY) == false) {
+					posX = (int)(3 * Math.random() + 1);
+					posY = (int)(3 * Math.random() + 1);
+				}
+				else {
+					placePosition(posX, posY);
+					count++;
+				}
+			}
 		}
 	}
 }
